@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEGIS // AI Crowd Intelligence & Threat Surveillance System</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Custom Military Command Center Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#070b14] text-slate-100 font-sans h-screen flex flex-col overflow-hidden">
+
+  <!-- TOP COMMAND CENTER HEADER -->
+  <header class="tactical-panel rounded-none border-t-0 border-x-0 border-b border-cyan-500/25 px-4 py-2.5 flex items-center justify-between shrink-0 z-30">
+    <div class="flex items-center gap-3">
+      <!-- Radar logo icon -->
+      <div class="relative w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-cyan-500/10"></div>
+        <svg class="w-5 h-5 text-cyan-400 radar-sweep-anim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle cx="12" cy="12" r="9" stroke-width="1.5" stroke-dasharray="2 2" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v9l6 6" />
+        </svg>
+      </div>
+
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-tactical text-sm md:text-base font-extrabold tracking-wider text-white flex items-center gap-2">
+            AEGIS <span class="text-cyan-400 font-mono font-normal text-xs">// AI CROWD INTELLIGENCE C2</span>
+          </h1>
+          <span class="status-dot-pulse inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="text-[10px] font-mono uppercase text-emerald-400 font-semibold tracking-wider">LIVE SYSTEM ONLINE</span>
+        </div>
+        <div class="text-[10px] font-mono text-slate-400 flex items-center gap-2">
+          <span>TENSOR-EDGE V4.2</span>
+          <span>•</span>
+          <span class="text-cyan-400">100% STANDALONE // NO WEBCAM REQUIRED</span>
+          <span>•</span>
+          <span>4 SYNTHETIC MULTI-SPECTRAL SENSORS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Threat State Indicator -->
+    <div class="hidden lg:flex items-center gap-3 bg-slate-900/90 border border-slate-700/60 rounded px-3 py-1">
+      <div class="text-[10px] font-mono text-slate-400 uppercase">SURVEILLANCE THREAT LEVEL:</div>
+      <div id="globalThreatBadge" class="font-tactical text-xs font-bold px-2 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
+        NORMAL (DEFCON 5)
+      </div>
+    </div>
+
+    <!-- Header Actions & Clock -->
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- Digital Tactical Clock -->
+      <div class="text-right font-mono hidden sm:block">
+        <div id="hudClock" class="text-xs text-cyan-400 font-bold tracking-wider">00:00:00.000 UTC</div>
+        <div class="text-[9px] text-slate-400">HIGH-PRECISION TELEMETRY SYNC</div>
+      </div>
+
+      <div class="h-6 w-px bg-slate-700 mx-1"></div>
+
+      <!-- Quick Toggles -->
+      <button id="btnHeaderWebcam" class="btn-tactical border-red-500/60 text-red-400 bg-red-950/40 hover:bg-red-900/40 hover:border-red-400 font-bold" title="Activate Live Webcam Sensor">
+        📹 USE WEBCAM
+      </button>
+
+      <button id="toggleAudio" class="btn-tactical btn-active" title="Toggle Tactical Audio Effects & Voice Announcer">
+        🔊 AUDIO ON
+      </button>
+
+      <button id="toggleScanlines" class="btn-tactical hidden md:inline-flex" title="Toggle CRT Surveillance Scanlines">
+        📺 SCANLINES
+      </button>
+
+      <button id="btnGenerateReport" class="btn-tactical border-cyan-400 text-cyan-300 bg-cyan-950/60" title="Generate Law Enforcement Incident Intelligence Report">
+        📄 INTEL DOSSIER
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN THREE-COLUMN WORKSPACE -->
+  <main class="flex-1 grid grid-cols-12 gap-2 p-2 overflow-hidden">
+    
+    <!-- LEFT COLUMN: SENSOR CONTROL & PERCEPTION SETTINGS (3 Cols) -->
+    <aside class="col-span-12 lg:col-span-3 flex flex-col gap-2 overflow-y-auto pr-1">
+      
+      <!-- Multi-View Selection -->
+      <div class="tactical-panel p-2.5">
+        <div class="text-[10px] font-mono text-cyan-400 font-bold tracking-wider uppercase mb-2 flex items-center justify-between">
+          <span>Viewport Layout Mode</span>
+          <span class="text-slate-400">3 MODES</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+          <button data-view="single" class="view-mode-btn btn-tactical btn-active justify-center text-center py-1.5">
+            FOCUS CAM
+          </button>
+          <button data-view="quad" class="view-mode-btn btn-tactical justify-center text-center py-1.5">
+            QUAD GRID
+          </button>
+          <button data-view="radar" class="view-mode-btn btn-tactical justify-center text-center py-1.5">
+            2D RADAR
+          </button>
+        </div>
+      </div>
+
+      <!-- Camera Feed Selector -->
+      <div class="tactical-panel p-2.5">
+        <div class="text-[10px] font-mono text-cyan-400 font-bold tracking-wider uppercase mb-2 flex items-center justify-between">
+          <span>Active CCTV Sectors</span>
+          <span class="text-emerald-400">5 CHANNELS</span>
+        </div>
+        <div class="space-y-1.5 font-mono text-xs">
+          <!-- LIVE WEBCAM BUTTON -->
+          <button id="btnSelectWebcam" data-cam="CAM-LIVE" class="cam-select-btn btn-tactical w-full justify-between py-2.5 text-left border-red-500/50 bg-red-950/20 hover:border-red-400">
+            <div>
+              <div class="font-bold flex items-center gap-1.5 text-red-400">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                CAM-LIVE // 🔴 YOUR WEBCAM
+              </div>
+              <div class="text-[9px] text-slate-300 font-normal">Real Optical Sensor • AI Threat Detection</div>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/40 font-bold">LIVE FEED</span>
+          </button>
+
+          <!-- CAM 01 -->
+          <button data-cam="CAM-01" class="cam-select-btn btn-tactical btn-active w-full justify-between py-2 text-left">
+            <div>
+              <div class="font-bold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                CAM-01 // TERMINAL CONCOURSE
+              </div>
+              <div class="text-[9px] text-slate-400 font-normal">Level 2 Main Transit Hub • High Traffic</div>
+            </div>
+            <span class="text-[9px] text-cyan-300">4K 60FPS</span>
+          </button>
+
+          <!-- CAM 02 -->
+          <button data-cam="CAM-02" class="cam-select-btn btn-tactical w-full justify-between py-2 text-left">
+            <div>
+              <div class="font-bold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                CAM-02 // STADIUM TURNSTILES
+              </div>
+              <div class="text-[9px] text-slate-400 font-normal">Gate Bravo Chokepoint • Funnel Queue</div>
+            </div>
+            <span class="text-[9px] text-cyan-300">4K 60FPS</span>
+          </button>
+
+          <!-- CAM 03 -->
+          <button data-cam="CAM-03" class="cam-select-btn btn-tactical w-full justify-between py-2 text-left">
+            <div>
+              <div class="font-bold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                CAM-03 // CIVIC PLAZA
+              </div>
+              <div class="text-[9px] text-slate-400 font-normal">Public Square & Memorial • Open Area</div>
+            </div>
+            <span class="text-[9px] text-cyan-300">4K 60FPS</span>
+          </button>
+
+          <!-- CAM 04 -->
+          <button data-cam="CAM-04" class="cam-select-btn btn-tactical w-full justify-between py-2 text-left">
+            <div>
+              <div class="font-bold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                CAM-04 // PERIMETER SECTOR 7G
+              </div>
+              <div class="text-[9px] text-slate-400 font-normal">Secure Vault Corridor • Tripwire Monitored</div>
+            </div>
+            <span class="text-[9px] text-red-400 font-bold">RESTRICTED</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Perception Layer Controls -->
+      <div class="tactical-panel p-2.5">
+        <div class="text-[10px] font-mono text-cyan-400 font-bold tracking-wider uppercase mb-2 flex items-center justify-between">
+          <span>AI Vision Overlays</span>
+          <span class="text-xs">⚙</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+          <button id="toggleBoundingBoxes" class="btn-tactical btn-active justify-center">
+            YOLO BOXES
+          </button>
+          <button id="toggleHeatmap" class="btn-tactical btn-active justify-center">
+            HEATMAP KDE
+          </button>
+          <button id="toggleVectors" class="btn-tactical btn-active justify-center">
+            MOTION VECTORS
+          </button>
+          <button id="togglePose" class="btn-tactical btn-active justify-center">
+            POSE SKELETON
+          </button>
+          <button id="toggleTripwires" class="btn-tactical btn-active justify-center">
+            VIRTUAL TRIPWIRE
+          </button>
+          <button id="togglePrivacyMask" class="btn-tactical justify-center">
+            PRIVACY BLUR
+          </button>
+          <button id="toggleNightVision" class="btn-tactical justify-center col-span-2">
+            NIGHT VISION THERMAL
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Video / Image Analysis Dropzone -->
+      <div class="tactical-panel p-2.5 flex-1 flex flex-col justify-between">
+        <div>
+          <div class="text-[10px] font-mono text-cyan-400 font-bold tracking-wider uppercase mb-1">
+            Analyze Custom Video / Photo
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono leading-tight mb-2">
+            Drag & drop any video (MP4/WebM) or image snapshot to run AI crowd detection directly!
+          </p>
+        </div>
+
+        <label class="border-2 border-dashed border-cyan-500/30 hover:border-cyan-400 rounded-md p-3 text-center cursor-pointer transition bg-cyan-950/20 block">
+          <svg class="w-6 h-6 mx-auto text-cyan-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span class="text-[10px] font-mono text-cyan-300 font-bold block">SELECT OR DROP MEDIA</span>
+          <span class="text-[8px] font-mono text-slate-500">MP4, WEBM, PNG, JPG</span>
+          <input type="file" id="mediaUploadInput" accept="video/*,image/*" class="hidden" />
+        </label>
+      </div>
+
+    </aside>
+
+    <!-- CENTER COLUMN: MAIN SURVEILLANCE FEED & SCENARIO CONTROL (6 Cols) -->
+    <section class="col-span-12 lg:col-span-6 flex flex-col gap-2 overflow-hidden">
+      
+      <!-- CCTV Telemetry Ribbon -->
+      <div class="tactical-panel px-3 py-1.5 flex items-center justify-between font-mono text-xs shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="px-1.5 py-0.5 rounded bg-red-600/30 border border-red-500/50 text-red-400 font-bold text-[10px] flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span> REC
+          </span>
+          <span id="hudSectorId" class="text-cyan-400 font-bold">CAM-01</span>
+          <span class="text-slate-500">|</span>
+          <span id="hudSectorName" class="text-slate-200">CENTRAL CONCOURSE</span>
+        </div>
+        <div class="flex items-center gap-3 text-[10px] text-slate-400">
+          <span id="hudSectorLocation">Level 2 Main Transit Hub</span>
+          <span class="text-slate-500">|</span>
+          <span id="hudFpsCounter" class="text-emerald-400 font-bold">60 FPS</span>
+          <span class="text-slate-500">|</span>
+          <span class="text-cyan-400">4K UHD</span>
+        </div>
+      </div>
+
+      <!-- Main Video Feed Viewport Canvas -->
+      <div class="tactical-panel hud-corners flex-1 relative flex items-center justify-center bg-black overflow-hidden min-h-[300px]">
+        
+        <!-- Mode 1: Single Camera Focused Canvas View -->
+        <div id="singleViewWrapper" class="w-full h-full relative">
+          <canvas id="mainViewportCanvas" class="w-full h-full object-contain block"></canvas>
+          
+          <!-- Tactical HUD Overlays (Crosshairs, Compass, Sector Watermark) -->
+          <div class="absolute top-2 left-2 pointer-events-none font-mono text-[9px] text-cyan-400/80 bg-black/60 px-2 py-0.5 rounded border border-cyan-500/20">
+            AI INFERENCE: YOLOv9-CROWD // LATENCY: 12ms // WEBCAM: BYPASSED
+          </div>
+          <div class="absolute bottom-2 right-2 pointer-events-none font-mono text-[9px] text-slate-400 bg-black/60 px-2 py-0.5 rounded border border-slate-700">
+            AEGIS SURVEILLANCE SUITE // CLASSIFIED
+          </div>
+        </div>
+
+        <!-- Mode 2: Quad Camera Grid View (4 Canvases) -->
+        <div id="quadViewWrapper" class="w-full h-full hidden grid-cols-2 grid-rows-2 gap-1 p-1 bg-slate-950">
+          <div class="relative border border-cyan-500/20 bg-black">
+            <canvas id="quadCanvas_CAM-01" class="w-full h-full object-cover block"></canvas>
+            <span class="absolute top-1 left-1 text-[8px] font-mono text-cyan-400 bg-black/70 px-1 rounded">CAM-01 CONCOURSE</span>
+          </div>
+          <div class="relative border border-cyan-500/20 bg-black">
+            <canvas id="quadCanvas_CAM-02" class="w-full h-full object-cover block"></canvas>
+            <span class="absolute top-1 left-1 text-[8px] font-mono text-cyan-400 bg-black/70 px-1 rounded">CAM-02 GATE B</span>
+          </div>
+          <div class="relative border border-cyan-500/20 bg-black">
+            <canvas id="quadCanvas_CAM-03" class="w-full h-full object-cover block"></canvas>
+            <span class="absolute top-1 left-1 text-[8px] font-mono text-cyan-400 bg-black/70 px-1 rounded">CAM-03 PLAZA</span>
+          </div>
+          <div class="relative border border-red-500/30 bg-black">
+            <canvas id="quadCanvas_CAM-04" class="w-full h-full object-cover block"></canvas>
+            <span class="absolute top-1 left-1 text-[8px] font-mono text-red-400 bg-black/70 px-1 rounded">CAM-04 PERIMETER 7G</span>
+          </div>
+        </div>
+
+        <!-- Mode 3: 2D Tactical Radar Facility Map View -->
+        <div id="radarViewWrapper" class="w-full h-full hidden relative bg-[#060a14]">
+          <canvas id="tacticalRadarCanvas" class="w-full h-full object-contain block"></canvas>
+          <div class="absolute top-2 left-2 font-mono text-xs text-cyan-400 bg-slate-900/80 px-2 py-1 rounded border border-cyan-500/30">
+            FACILITY SCHEMATIC OVERVIEW // LIVE SENSOR BEACONS
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SCENARIO INJECTION CONTROLLER (Live Simulation Toolbar) -->
+      <div class="tactical-panel p-2 shrink-0">
+        <div class="flex items-center justify-between mb-1.5 font-mono text-[10px]">
+          <span class="text-cyan-400 font-bold uppercase tracking-wider">Scenario Threat Injector (Live Crowd Dynamics Testing)</span>
+          <span class="text-slate-400">INSTANT AI SIMULATION</span>
+        </div>
+        <div class="grid grid-cols-4 sm:grid-cols-8 gap-1 font-mono text-[9px]">
+          <button data-scenario="surge" class="scenario-btn btn-tactical btn-warning justify-center text-center py-1.5" title="Inject rapid influx crowd surge">
+            🚨 SURGE
+          </button>
+          <button data-scenario="panic" class="scenario-btn btn-tactical btn-danger justify-center text-center py-1.5" title="Trigger stampede & panic divergence">
+            ⚠️ STAMPEDE
+          </button>
+          <button data-scenario="baggage" class="scenario-btn btn-tactical btn-warning justify-center text-center py-1.5" title="Drop suspicious unattended bag">
+            🎒 BAG DROP
+          </button>
+          <button data-scenario="breach" class="scenario-btn btn-tactical btn-danger justify-center text-center py-1.5" title="Trigger perimeter tripwire breach">
+            ⛔ BREACH
+          </button>
+          <button data-scenario="loitering" class="scenario-btn btn-tactical btn-warning justify-center text-center py-1.5" title="Simulate suspicious lingering dwell time">
+            ⏱ LOITERING
+          </button>
+          <button data-scenario="surge" class="scenario-btn btn-tactical justify-center text-center py-1.5" title="Spawn additional pedestrians">
+            ➕ +40 CITIZENS
+          </button>
+          <button data-scenario="clear" class="scenario-btn btn-tactical justify-center text-center py-1.5 col-span-2 text-emerald-400 border-emerald-500/40" title="Reset sector to normal baseline">
+            🔄 RESET CALM
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: TELEMETRY GAUGES, TIME-SERIES CHART & INCIDENT AUDIT (3 Cols) -->
+    <aside class="col-span-12 lg:col-span-3 flex flex-col gap-2 overflow-y-auto pl-1">
+      
+      <!-- Real-Time Analytical Metric Cards -->
+      <div class="grid grid-cols-2 gap-1.5 font-mono">
+        <!-- Headcount -->
+        <div class="tactical-panel p-2">
+          <div class="text-[9px] text-slate-400 uppercase">Headcount</div>
+          <div id="metricHeadcount" class="text-xl font-bold text-white mt-0.5">75</div>
+          <div class="text-[8px] text-emerald-400">Optical Count</div>
+        </div>
+
+        <!-- Density -->
+        <div class="tactical-panel p-2">
+          <div class="text-[9px] text-slate-400 uppercase">Crowd Density</div>
+          <div id="metricDensity" class="text-xl font-bold text-cyan-400 mt-0.5">0.42 P/m²</div>
+          <div id="metricLoS" class="text-[8px] text-emerald-400 font-bold truncate">LoS B - Normal</div>
+        </div>
+
+        <!-- Flow Velocity -->
+        <div class="tactical-panel p-2">
+          <div class="text-[9px] text-slate-400 uppercase">Flow Rate</div>
+          <div id="metricFlowRate" class="text-xl font-bold text-slate-100 mt-0.5">48 /min</div>
+          <div class="text-[8px] text-slate-400">Directional Rate</div>
+        </div>
+
+        <!-- Crush / Stampede Risk -->
+        <div class="tactical-panel p-2">
+          <div class="text-[9px] text-slate-400 uppercase">Crush Hazard</div>
+          <div id="metricCrushRisk" class="text-xl font-bold text-amber-400 mt-0.5">18%</div>
+          <div class="text-[8px] text-slate-400">Surge Index</div>
+        </div>
+
+        <!-- Anomaly Threat Score -->
+        <div class="tactical-panel p-2 col-span-2 flex items-center justify-between">
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase">Anomaly Threat Score</div>
+            <div id="metricThreatScore" class="text-xl font-bold text-red-400 mt-0.5">12%</div>
+          </div>
+          <div class="text-right">
+            <span class="text-[8px] font-mono text-slate-400 block">AI INFERENCE</span>
+            <span class="text-[9px] font-mono text-cyan-400 font-bold">MULTI-VECTOR</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Telemetry Trend Chart -->
+      <div class="tactical-panel p-2 flex flex-col">
+        <div class="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider mb-1 flex justify-between items-center">
+          <span>Surveillance Telemetry</span>
+          <span class="text-[9px] text-slate-400">REAL-TIME</span>
+        </div>
+        <div class="h-28 w-full relative">
+          <canvas id="telemetryTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Incident Event Log Stream -->
+      <div class="tactical-panel p-2 flex-1 flex flex-col min-h-[160px]">
+        <div class="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider mb-1.5 flex justify-between items-center">
+          <span>Live Security Event Stream</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 status-dot-pulse"></span>
+        </div>
+        
+        <div id="incidentLogContainer" class="flex-1 space-y-1.5 overflow-y-auto max-h-48 pr-1">
+          <!-- Dynamic logs appended here -->
+        </div>
+      </div>
+
+      <!-- Emergency Dispatch & Security Actions -->
+      <div class="tactical-panel p-2 shrink-0">
+        <div class="text-[10px] font-mono text-red-400 font-bold uppercase tracking-wider mb-1.5">
+          Emergency Command & Dispatch
+        </div>
+        <div class="grid grid-cols-1 gap-1.5 font-mono text-[10px]">
+          <button id="btnDispatchGuards" class="btn-tactical btn-danger justify-center font-bold py-1.5">
+            🚨 DISPATCH RAPID RESPONSE TEAM
+          </button>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button id="btnBroadcastPA" class="btn-tactical btn-warning justify-center py-1.5">
+              📢 BROADCAST PA
+            </button>
+            <button id="btnLockdownGates" class="btn-tactical btn-danger justify-center py-1.5">
+              🔒 SEAL GATES
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- CLASSIFIED INCIDENT INTELLIGENCE DOSSIER MODAL -->
+  <div id="incidentReportModal" class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="tactical-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 bg-[#0a0f1d] border-cyan-400 shadow-2xl relative">
+      
+      <!-- Close Button -->
+      <button onclick="document.getElementById('incidentReportModal').classList.add('hidden'); document.getElementById('incidentReportModal').classList.remove('flex');" class="absolute top-4 right-4 text-slate-400 hover:text-white font-mono text-sm px-2 py-1 rounded border border-slate-700 hover:border-cyan-400 no-print">
+        ✕ CLOSE
+      </button>
+
+      <!-- Dossier Content Container -->
+      <div id="incidentReportContent">
+        <!-- Rendered dynamically by js/app.js -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end gap-3 no-print">
+        <button onclick="window.print()" class="btn-tactical btn-active px-4 py-2 text-xs">
+          🖨 PRINT / EXPORT PDF
+        </button>
+        <button onclick="document.getElementById('incidentReportModal').classList.add('hidden'); document.getElementById('incidentReportModal').classList.remove('flex');" class="btn-tactical px-4 py-2 text-xs">
+          DISMISS
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HIDDEN WEBCAM VIDEO STREAM -->
+  <video id="webcamVideo" class="hidden" autoplay playsinline muted></video>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/audio.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ai-vision.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
